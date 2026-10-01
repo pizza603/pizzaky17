@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>족보해커 — 시험 출제 유형 예측</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#ffffff;
+  --bg-soft:#fafafa;
+  --card:#ffffff;
+  --line:#e9e9ec;
+  --line-strong:#d8d8de;
+  --text:#16161a;
+  --text-mid:#55555f;
+  --text-dim:#8c8c96;
+  --accent:#1f56f0;
+  --accent-soft:#eef2ff;
+  --accent-line:#c7d3ff;
+  --warn:#c2410c;
+  --warn-soft:#fff5ed;
+  --ok:#0f766e;
+  --ok-soft:#effaf7;
+  --shadow:0 1px 2px rgba(16,16,24,.04), 0 8px 24px rgba(16,16,24,.05);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101014; --bg-soft:#16161b; --card:#17171d; --line:#2a2a33; --line-strong:#3a3a45;
+    --text:#f2f2f5; --text-mid:#b6b6c2; --text-dim:#85858f;
+    --accent:#7d9bff; --accent-soft:#1b2140; --accent-line:#2f3a6b;
+    --warn:#f0a06a; --warn-soft:#2a1f18; --ok:#5fd3c0; --ok-soft:#14261f;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101014; --bg-soft:#16161b; --card:#17171d; --line:#2a2a33; --line-strong:#3a3a45;
+  --text:#f2f2f5; --text-mid:#b6b6c2; --text-dim:#85858f;
+  --accent:#7d9bff; --accent-soft:#1b2140; --accent-line:#2f3a6b;
+  --warn:#f0a06a; --warn-soft:#2a1f18; --ok:#5fd3c0; --ok-soft:#14261f;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  font-weight:400;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;}
+button{font-family:inherit;}
+
+.wrap{max-width:860px;margin:0 auto;padding:0 20px 80px;}
+
+/* ── 상단 바 ── */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{max-width:860px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;}
+.brand{font-weight:900;letter-spacing:-.03em;font-size:17px;cursor:pointer;}
+.brand span{color:var(--accent);}
+.steps{margin-left:auto;display:flex;align-items:center;gap:6px;}
+.step{
+  font-size:11.5px;color:var(--text-dim);border:1px solid var(--line);
+  padding:3px 9px;border-radius:999px;white-space:nowrap;
+}
+.step.on{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft);font-weight:500;}
+@media(max-width:620px){ .steps{display:none;} }
+.gear-btn{
+  margin-left:12px;flex:none;width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--line);background:var(--card);color:var(--text-mid);
+  font-size:15px;cursor:pointer;transition:all .15s ease;
+}
+.gear-btn:hover{color:var(--text);border-color:var(--line-strong);background:var(--bg-soft);}
+
+/* ── 관리자(설정) 화면 ── */
+.admin-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.admin-picker button{
+  font-size:13px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);
+  background:var(--card);color:var(--text-mid);cursor:pointer;transition:all .15s ease;
+}
+.admin-picker button:hover{border-color:var(--line-strong);}
+.admin-picker button.sel{background:var(--text);color:var(--bg);border-color:var(--text);}
+.admin-form{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:20px;}
+.admin-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin-bottom:12px;}
+.admin-row label{font-size:13.5px;color:var(--text-mid);}
+.admin-row input{
+  padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);
+  color:var(--text);font-family:inherit;font-size:14px;width:100%;
+}
+.admin-row input:focus{outline:none;border-color:var(--accent-line);}
+.json-label{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 7px;}
+.json-label span{font-size:13.5px;font-weight:500;}
+.json-label small{color:var(--text-dim);font-size:12px;}
+#unitsJson{
+  width:100%;min-height:340px;resize:vertical;padding:14px;border-radius:12px;
+  border:1px solid var(--line);background:var(--bg-soft);color:var(--text);
+  font-family:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;font-size:12.8px;line-height:1.7;
+  tab-size:2;white-space:pre;overflow:auto;
+}
+#unitsJson:focus{outline:none;border-color:var(--accent-line);}
+.json-err{
+  display:none;margin-top:8px;padding:10px 13px;border-radius:10px;font-size:12.5px;
+  background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%, transparent);
+}
+.json-ok{
+  display:none;margin-top:8px;padding:10px 13px;border-radius:10px;font-size:12.5px;
+  background:var(--ok-soft);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 25%, transparent);
+}
+.admin-help{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft);
+  padding:16px 18px;font-size:12.8px;color:var(--text-mid);line-height:1.8;margin-bottom:20px;
+}
+.admin-help code{
+  background:var(--card);border:1px solid var(--line);padding:1px 6px;border-radius:5px;
+  font-size:12px;font-family:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+}
+
+/* ── 화면 ── */
+.screen{display:none;animation:rise .35s ease both;}
+.screen.on{display:block;}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── 인트로 ── */
+.hero{padding:86px 0 40px;text-align:center;}
+.badge{
+  display:inline-block;font-size:12px;letter-spacing:.02em;color:var(--accent);
+  background:var(--accent-soft);border:1px solid var(--accent-line);
+  padding:5px 12px;border-radius:999px;margin-bottom:24px;
+}
+.hero h1{
+  font-size:clamp(42px,9vw,72px);font-weight:900;letter-spacing:-.045em;
+  line-height:1.08;margin:0 0 18px;
+}
+.hero h1 em{font-style:normal;color:var(--accent);}
+.hero p{color:var(--text-mid);font-size:clamp(15px,2.6vw,17px);margin:0 auto 34px;max-width:520px;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--text);color:var(--bg);border:1px solid var(--text);
+  font-size:15px;font-weight:500;padding:13px 30px;border-radius:999px;cursor:pointer;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.btn:hover{transform:translateY(-1px);opacity:.9;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn.ghost{background:transparent;color:var(--text-mid);border-color:var(--line-strong);}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.sm{padding:9px 18px;font-size:13.5px;}
+
+.hero-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:64px;text-align:left;
+}
+@media(max-width:620px){ .hero-grid{grid-template-columns:1fr;} .hero{padding-top:56px;} }
+.hero-card{
+  border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--card);
+}
+.hero-card b{display:block;font-size:14.5px;margin-bottom:6px;font-weight:700;}
+.hero-card p{font-size:13px;color:var(--text-dim);margin:0;line-height:1.6;}
+
+/* ── 섹션 헤더 ── */
+.head{padding:48px 0 26px;}
+.head .eyebrow{font-size:12.5px;color:var(--accent);font-weight:500;letter-spacing:.02em;margin-bottom:8px;}
+.head h2{font-size:clamp(26px,5vw,34px);font-weight:900;letter-spacing:-.035em;margin:0 0 10px;}
+.head p{color:var(--text-mid);font-size:14.5px;margin:0;}
+
+/* ── 과목 카드 ── */
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px;}
+.subj{
+  text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 18px 16px;cursor:pointer;transition:all .16s ease;color:var(--text);
+}
+.subj:hover{border-color:var(--line-strong);transform:translateY(-2px);box-shadow:var(--shadow);}
+.subj.sel{border-color:var(--accent);background:var(--accent-soft);}
+.subj .ico{font-size:22px;line-height:1;margin-bottom:10px;}
+.subj .nm{font-size:17px;font-weight:700;letter-spacing:-.02em;}
+.subj .bk{font-size:12px;color:var(--text-dim);margin-top:3px;}
+.subj .rg{font-size:12px;color:var(--text-mid);margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);}
+
+/* ── 유형 입력 ── */
+.note-box{
+  border:1px solid var(--line);background:var(--bg-soft);border-radius:var(--radius);
+  padding:14px 16px;font-size:13px;color:var(--text-mid);margin-bottom:22px;
+}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.type{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;
+}
+.type h4{margin:0 0 2px;font-size:15px;font-weight:700;letter-spacing:-.02em;}
+.type small{display:block;color:var(--text-dim);font-size:12px;line-height:1.5;min-height:34px;}
+.counter{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.counter button{
+  width:32px;height:32px;border-radius:9px;border:1px solid var(--line-strong);
+  background:transparent;color:var(--text);font-size:16px;cursor:pointer;line-height:1;
+}
+.counter button:hover{background:var(--bg-soft);}
+.counter input{
+  flex:1;min-width:0;text-align:center;font-size:16px;font-weight:700;padding:7px 4px;
+  border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);
+  font-family:inherit;
+}
+.counter .unit{font-size:12.5px;color:var(--text-dim);}
+
+.total-bar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:20px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--bg-soft);font-size:14px;
+}
+.total-bar b{font-size:19px;font-weight:900;}
+
+.memo{margin-top:22px;}
+.memo label{display:block;font-size:13.5px;font-weight:500;margin-bottom:7px;}
+.memo textarea{
+  width:100%;min-height:86px;resize:vertical;padding:12px 14px;border-radius:12px;
+  border:1px solid var(--line);background:var(--card);color:var(--text);
+  font-family:inherit;font-size:14px;line-height:1.6;
+}
+.memo textarea:focus{outline:none;border-color:var(--accent-line);}
+.memo .hint{font-size:12px;color:var(--text-dim);margin-top:6px;}
+
+.actions{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;}
+
+/* ── 결과 ── */
+.dist{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--card);margin-bottom:18px;}
+.dist h3{margin:0 0 14px;font-size:15px;font-weight:700;}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px;}
+.row .lb{width:84px;flex:none;color:var(--text-mid);}
+.row .track{flex:1;height:9px;border-radius:999px;background:var(--bg-soft);border:1px solid var(--line);overflow:hidden;}
+.row .fill{height:100%;background:var(--accent);border-radius:999px;transition:width .5s ease;}
+.row .vl{width:64px;flex:none;text-align:right;color:var(--text-dim);font-size:12px;}
+
+.summary{
+  border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:22px;font-size:14.5px;line-height:1.75;
+}
+.summary b{font-weight:700;}
+
+.unit-card{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  padding:20px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.unit-card .uh{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.unit-card h3{margin:0;font-size:18px;font-weight:900;letter-spacing:-.025em;}
+.unit-card .sub{font-size:13px;color:var(--text-dim);margin:2px 0 14px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.chip{
+  font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);
+  color:var(--text-mid);background:var(--bg-soft);
+}
+.pred{border-top:1px solid var(--line);padding-top:13px;margin-top:2px;}
+.pred-item{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line);}
+.pred-item:last-child{border-bottom:none;}
+.lv{
+  flex:none;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap;margin-top:2px;
+}
+.lv.high{background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%, transparent);}
+.lv.mid{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);}
+.lv.low{background:var(--bg-soft);color:var(--text-dim);border:1px solid var(--line);}
+.pred-item .pt{font-size:14px;}
+.pred-item .pt b{font-weight:700;}
+.pred-item .pt span{display:block;color:var(--text-mid);font-size:13px;margin-top:2px;}
+
+.must{margin-top:14px;padding:13px 15px;border-radius:11px;background:var(--ok-soft);border:1px solid color-mix(in srgb,var(--ok) 25%, transparent);}
+.must b{font-size:12.5px;color:var(--ok);display:block;margin-bottom:5px;font-weight:700;}
+.must ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--text);line-height:1.7;}
+
+.study-progress{margin:0 0 22px;padding:16px 18px;border:1px solid var(--accent-line);border-radius:var(--radius);background:var(--accent-soft);}
+.sp-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--text-mid);margin-bottom:9px;}
+.sp-top b{font-size:16px;font-weight:800;color:var(--accent);}
+.sp-track{height:8px;border-radius:999px;background:var(--card);border:1px solid var(--line);overflow:hidden;}
+.sp-fill{height:100%;background:var(--accent);border-radius:999px;transition:width .4s ease;width:0%;}
+
+.unit-progress{
+  font-size:11px;color:var(--text-mid);font-weight:600;margin-left:auto;
+  padding:3px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg-soft);white-space:nowrap;
+}
+.checklist{display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+.chk-item{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;line-height:1.6;cursor:pointer;}
+.chk-item input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+.chk-item span{transition:color .15s ease;color:var(--text);}
+.chk-item.done span{color:var(--text-dim);text-decoration:line-through;}
+
+.lv{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.lv .pctnum{font-size:10.5px;font-weight:800;opacity:.85;}
+
+.fb-summary{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft);
+  padding:14px 16px;margin-bottom:18px;font-size:12.8px;color:var(--text-mid);
+}
+.fb-summary b{display:block;font-size:13px;color:var(--text);margin-bottom:8px;font-weight:700;}
+.fb-summary .fb-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.fb-summary .fb-chip{
+  font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+}
+
+/* ── 시험 후 피드백 화면 ── */
+.fb-block{margin-bottom:28px;}
+.fb-block-title{font-size:15px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em;}
+.fb-note-box{font-size:12.5px;color:var(--text-dim);margin-top:8px;line-height:1.6;}
+.diff-picker{display:flex;flex-wrap:wrap;gap:8px;}
+.diff-btn{
+  font-size:13.5px;padding:9px 16px;border-radius:999px;border:1px solid var(--line);
+  background:var(--card);color:var(--text-mid);cursor:pointer;transition:all .15s ease;
+}
+.diff-btn:hover{border-color:var(--line-strong);}
+.diff-btn.sel{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600;}
+
+.fb-unit-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:8px;
+}
+.fb-unit-title{font-size:14px;font-weight:600;}
+.fb-unit-input{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);}
+.fb-unit-input input{
+  width:64px;padding:7px 8px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;text-align:center;
+}
+.fb-unit-input input:focus{outline:none;border-color:var(--accent-line);}
+
+.fb-accuracy-wrap{display:flex;align-items:center;gap:14px;}
+.fb-accuracy-wrap input[type=range]{flex:1;accent-color:var(--accent);height:6px;cursor:pointer;}
+.fb-accuracy-val{font-size:17px;font-weight:800;color:var(--accent);min-width:52px;text-align:right;}
+
+@media print{
+  :root, :root[data-theme="dark"]{
+    --bg:#ffffff; --bg-soft:#f7f7f8; --card:#ffffff; --line:#dddde2; --line-strong:#c7c7cf;
+    --text:#111114; --text-mid:#45454e; --text-dim:#77777f;
+    --accent:#1f56f0; --accent-soft:#eef2ff; --accent-line:#c7d3ff;
+    --warn:#c2410c; --warn-soft:#fff5ed; --ok:#0f766e; --ok-soft:#effaf7;
+  }
+  body{background:#fff;}
+  .topbar, .gear-btn, .foot, .err, .actions{display:none !important;}
+  .wrap{max-width:100%;padding:0 6mm;}
+  .unit-card, .dist, .summary, .tips, .study-progress{break-inside:avoid;box-shadow:none;}
+  .btn{display:none !important;}
+}
+
+.tips{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:var(--bg-soft);margin-top:20px;}
+.tips b{display:block;font-size:14px;margin-bottom:8px;font-weight:700;}
+.tips ol{margin:0;padding-left:20px;font-size:14px;line-height:1.85;color:var(--text-mid);}
+
+.loading{text-align:center;padding:70px 20px;}
+.spin{
+  width:34px;height:34px;border-radius:50%;border:3px solid var(--line);
+  border-top-color:var(--accent);margin:0 auto 18px;animation:sp .8s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading p{color:var(--text-mid);font-size:14px;margin:0;}
+.loading small{display:block;color:var(--text-dim);font-size:12.5px;margin-top:6px;}
+
+.err{
+  border:1px solid color-mix(in srgb,var(--warn) 35%, transparent);background:var(--warn-soft);
+  color:var(--warn);border-radius:var(--radius);padding:14px 16px;font-size:13.5px;margin-bottom:16px;
+}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--text-dim);line-height:1.7;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" onclick="go('intro')">족보<span>해커</span></div>
+    <div class="steps">
+      <div class="step" id="st1">1 · 과목</div>
+      <div class="step" id="st2">2 · 출제 유형</div>
+      <div class="step" id="st3">3 · 예측 결과</div>
+    </div>
+    <button class="gear-btn" onclick="go('admin')" title="시험 범위 설정" aria-label="설정">⚙</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══ 1. 인트로 ═══ -->
+<section class="screen on" id="sc-intro">
+  <div class="hero">
+    <div class="badge">중3 2학기 내신 대비</div>
+    <h1>족보<em>해커</em></h1>
+    <p>시간은 없고, 선생님마다 출제 경향은 다르고.<br>지난 시험지의 유형 분포를 넣으면 이번 시험 범위에서<br><b>어떤 단원이 어떤 유형으로 나올지</b> 예측해 드립니다.</p>
+    <button class="btn" onclick="go('subject')">시작하기 →</button>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <b>① 과목 선택</b>
+        <p>국어·수학·사회·과학·영어·역사·한문 중 공부할 과목을 고릅니다.</p>
+      </div>
+      <div class="hero-card">
+        <b>② 지난 시험지 분석</b>
+        <p>6가지 출제 유형이 각각 몇 문제씩 나왔는지 입력합니다.</p>
+      </div>
+      <div class="hero-card">
+        <b>③ 유형 예측</b>
+        <p>시험 범위의 소단원·작품·개념별로 나올 확률이 높은 유형을 알려줍니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2. 과목 선택 ═══ -->
+<section class="screen" id="sc-subject">
+  <div class="head">
+    <div class="eyebrow">STEP 1</div>
+    <h2>어떤 과목을 준비하나요?</h2>
+    <p>이번 시험 범위는 과목을 고르면 자동으로 적용됩니다.</p>
+  </div>
+  <div class="subjects" id="subjectList"></div>
+  <div class="actions">
+    <button class="btn ghost sm" onclick="go('intro')">← 처음으로</button>
+  </div>
+</section>
+
+<!-- ═══ 3. 유형 입력 ═══ -->
+<section class="screen" id="sc-types">
+  <div class="head">
+    <div class="eyebrow">STEP 2 · <span id="typeSubjLabel"></span></div>
+    <h2>지난 시험지, 유형별 몇 문제였나요?</h2>
+    <p>같은 선생님이 출제한 가장 최근 시험지 기준으로 입력하면 정확도가 올라갑니다.</p>
+  </div>
+  <div class="note-box">💡 정확히 세기 어렵다면 대략적인 느낌으로 넣어도 됩니다. 한 문제가 두 유형에 걸치면 <b>더 가까운 쪽 하나</b>에만 넣어 주세요.</div>
+  <div class="types" id="typeList"></div>
+  <div class="total-bar">
+    <span>입력한 총 문항 수</span><b id="totalCnt">0</b><span>문항</span>
+    <span id="totalWarn" style="color:var(--text-dim);font-size:12.5px;margin-left:auto;"></span>
+  </div>
+
+  <div class="memo">
+    <label for="memoBox">추가 정보 (선택) — 알수록 예측이 정확해집니다</label>
+    <textarea id="memoBox" placeholder="예) 서술형 4문제 포함 / 선생님이 수업 때 프린트 위주로 낸다고 하심 / 교과서 목차가 사이트 표시와 다름: 1단원은 '문학의 아름다움'…"></textarea>
+    <div class="hint">교과서 목차가 다르면 여기에 실제 단원명·작품명을 적어 주세요. 그대로 반영해 예측합니다.</div>
+  </div>
+
+  <div class="note-box" style="margin-top:22px;">
+    <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">
+      <input type="checkbox" id="browserAiToggle" style="margin-top:3px;flex:none;">
+      <span>
+        <b style="display:block;color:var(--text);font-weight:700;margin-bottom:3px;">🧪 실험적 기능 — 브라우저에서 도는 무료 AI로 예측</b>
+        이 HTML 파일을 <b>다운로드해서 직접 연 경우에만</b> 동작합니다. 처음 한 번 실행할 때 모델(약 1GB)을 내려받으므로 Wi-Fi에서, 최신 Chrome·Edge 데스크톱 + WebGPU 지원 환경을 권장합니다. claude.ai에서 보고 있거나 조건이 안 맞으면 자동으로 자체 분석 로직으로 대체됩니다.
+      </span>
+    </label>
+  </div>
+
+  <div class="actions">
+    <button class="btn ghost sm" onclick="go('subject')">← 과목 다시 선택</button>
+    <button class="btn accent" id="predictBtn" onclick="runPrediction()">예측 결과 보기 →</button>
+  </div>
+</section>
+
+<!-- ═══ 4. 결과 ═══ -->
+<section class="screen" id="sc-result">
+  <div id="resultBody"></div>
+</section>
+
+<!-- ═══ 5. 시험 후 피드백 ═══ -->
+<section class="screen" id="sc-feedback">
+  <div class="head">
+    <div class="eyebrow">시험 후 피드백</div>
+    <h2>이번 시험, 예측이 맞았나요?</h2>
+    <p id="fbSubjLabel" style="color:var(--text-mid);font-size:14.5px;"></p>
+  </div>
+
+  <div class="fb-block">
+    <div class="fb-block-title">시험 난이도는 어땠나요?</div>
+    <div class="diff-picker" id="fbDiffPicker"></div>
+  </div>
+
+  <div class="fb-block">
+    <div class="fb-block-title">각 단원에서 실제로 몇 문제가 나왔나요?</div>
+    <div class="fb-note-box">예측할 때 봤던 단원 목록이에요. 정확히 기억 안 나면 대략적인 숫자로 넣어도 괜찮아요.</div>
+    <div id="fbUnitsWrap"></div>
+  </div>
+
+  <div class="fb-block">
+    <div class="fb-block-title">예측 결과가 전체적으로 얼마나 맞았나요?</div>
+    <div class="fb-accuracy-wrap">
+      <input type="range" id="fbAccuracy" min="0" max="100" step="5" value="70" oninput="document.getElementById('fbAccuracyLabel').textContent=this.value+'%'">
+      <div class="fb-accuracy-val" id="fbAccuracyLabel">70%</div>
+    </div>
+    <div class="fb-note-box">0%는 "완전히 다르게 나왔다", 100%는 "예측이 거의 정확했다"는 뜻이에요.</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn accent" onclick="submitFeedback()">피드백 저장하기</button>
+    <button class="btn ghost sm" onclick="go('result')">← 결과 화면으로</button>
+  </div>
+</section>
+
+<!-- ═══ 6. 설정(관리자) ═══ -->
+<section class="screen" id="sc-admin">
+  <div class="head">
+    <div class="eyebrow">설정</div>
+    <h2>시험 범위 직접 수정하기</h2>
+    <p>학기가 바뀌면 여기서 교과서·범위·단원 정보를 고쳐서 계속 쓸 수 있어요. 이 브라우저에만 저장되며, 다른 사람에게는 보이지 않습니다.</p>
+  </div>
+
+  <div class="admin-help">
+    과목을 고르면 그 과목의 데이터가 JSON으로 나와요. <code>book</code>(교과서), <code>range</code>(시험 범위 표시), <code>units</code>(단원 배열)를 고치면 됩니다.
+    각 단원의 <code>topics</code>는 나올 수 있는 소단원·개념 목록이고, <code>aff</code>는 그 단원이 6가지 유형과 얼마나 잘 맞는지를 0~1 사이 숫자로 나타낸 값이에요 (1에 가까울수록 그 유형으로 잘 나오는 내용). 잘 모르겠으면 기존 단원의 숫자를 참고해서 비슷하게 맞추면 됩니다.
+  </div>
+
+  <div class="admin-picker" id="adminPicker"></div>
+
+  <div class="admin-form">
+    <div class="admin-row"><label for="adBook">교과서</label><input id="adBook" type="text" placeholder="예) 천재(노미숙) 중3-2"></div>
+    <div class="admin-row"><label for="adRange">시험 범위 표시</label><input id="adRange" type="text" placeholder="예) 1 · 2 · 3단원"></div>
+
+    <div class="json-label">
+      <span>단원 데이터 (JSON)</span>
+      <small>title / topics[] / aff{concept,calc,apply,data,choice,compare}</small>
+    </div>
+    <textarea id="unitsJson" spellcheck="false"></textarea>
+    <div class="json-err" id="jsonErr"></div>
+    <div class="json-ok" id="jsonOk">✓ 저장됐습니다. 과목 선택 화면에도 바로 반영돼요.</div>
+
+    <div class="actions">
+      <button class="btn accent sm" onclick="saveAdminSubject()">이 과목 저장</button>
+      <button class="btn ghost sm" onclick="resetAdminSubject()">이 과목만 기본값으로 되돌리기</button>
+      <button class="btn ghost sm" onclick="resetAllAdmin()">전체 초기화</button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn ghost sm" onclick="go('intro')">← 처음으로</button>
+  </div>
+</section>
+
+<div class="foot">
+  족보해커는 입력한 유형 분포와 시험 범위를 바탕으로 <b>확률적 예측</b>을 제공합니다. 실제 출제와 다를 수 있으니
+  수업 시간 필기·프린트·선생님이 강조한 부분을 항상 우선해 주세요.
+</div>
+
+</div>
+
+<script>
+/* ────────────── 데이터 ────────────── */
+const TYPES = [
+  {key:'concept', name:'개념 문제',  desc:'용어·정의·원리를 그대로 묻는 문제'},
+  {key:'calc',    name:'계산 문제',  desc:'식을 세워 값을 구하는 문제'},
+  {key:'apply',   name:'응용 문제',  desc:'배운 개념을 새로운 상황에 적용하는 문제'},
+  {key:'data',    name:'자료 분석형',desc:'그래프·표·지도·사진·지문을 해석하는 문제'},
+  {key:'choice',  name:'보기형',     desc:'ㄱㄴㄷ 보기에서 옳은 것을 모두 고르는 문제'},
+  {key:'compare', name:'비교형',     desc:'둘 이상을 견주어 차이·공통점을 묻는 문제'},
+];
+
+const SUBJECTS = [
+  {
+    id:'kor', icon:'📖', name:'국어', book:'천재(노미숙) 중3-2', range:'1 · 2 · 3단원',
+    units:[
+      {title:'1단원', topics:['본문 문학 작품 해석','서술상 특징·표현법','화자/서술자의 태도','단원 학습 활동 문항'],
+       aff:{concept:.9,calc:0,apply:.6,data:.8,choice:.7,compare:.5}},
+      {title:'2단원', topics:['설명/주장하는 글 읽기','문단별 중심 내용','논지 전개 방식','근거의 타당성 판단'],
+       aff:{concept:.7,calc:0,apply:.7,data:.9,choice:.6,compare:.6}},
+      {title:'3단원', topics:['문법 개념 (음운·단어·문장)','언어의 특성','한글 창제 원리','쓰기·말하기 태도'],
+       aff:{concept:1,calc:.2,apply:.6,data:.4,choice:.8,compare:.7}},
+    ]
+  },
+  {
+    id:'mat', icon:'📐', name:'수학', book:'동아(강옥기) 중3-2', range:'5 · 6 · 7단원',
+    units:[
+      {title:'5단원 · 삼각비', topics:['삼각비의 뜻','특수각의 삼각비','삼각비를 이용한 변의 길이','예각/둔각 삼각형의 넓이','실생활 활용(높이·거리)'],
+       aff:{concept:.6,calc:1,apply:.9,data:.5,choice:.4,compare:.3}},
+      {title:'6단원 · 원의 성질', topics:['현의 성질','접선의 길이','원주각과 중심각','원주각의 활용','원에 내접하는 사각형'],
+       aff:{concept:.7,calc:.9,apply:.9,data:.6,choice:.6,compare:.4}},
+      {title:'7단원 · 통계', topics:['대푯값(평균·중앙값·최빈값)','산포도와 편차','분산과 표준편차','산점도와 상관관계'],
+       aff:{concept:.7,calc:1,apply:.6,data:1,choice:.5,compare:.6}},
+    ]
+  },
+  {
+    id:'soc', icon:'🏛️', name:'사회', book:'미래엔 사회 2', range:'3 · 4단원',
+    units:[
+      {title:'3단원 · 경제생활과 선택', topics:['희소성과 합리적 선택','기회비용','기업의 역할과 사회적 책임','생애 주기와 자산 관리','신용 관리'],
+       aff:{concept:.9,calc:.5,apply:.8,data:.8,choice:.7,compare:.7}},
+      {title:'4단원 · 시장경제와 가격', topics:['시장의 의미와 종류','수요·공급 법칙','시장 가격의 결정','수요/공급 변동 요인','가격의 기능'],
+       aff:{concept:.7,calc:.6,apply:.8,data:1,choice:.7,compare:.8}},
+    ]
+  },
+  {
+    id:'sci', icon:'🔬', name:'과학', book:'동아출판 중3', range:'1 · 5단원',
+    units:[
+      {title:'1단원 · 화학 반응의 규칙과 에너지 변화', topics:['물리 변화와 화학 변화','화학 반응식 만들기','질량 보존 법칙','일정 성분비 법칙','기체 반응 법칙','발열 반응과 흡열 반응'],
+       aff:{concept:.8,calc:1,apply:.8,data:.9,choice:.8,compare:.7}},
+      {title:'5단원 · 생식과 유전', topics:['체세포 분열과 감수 분열','사람의 발생','멘델의 유전 원리','우열·분리·독립의 법칙','사람의 유전(가계도·ABO식 혈액형)'],
+       aff:{concept:.9,calc:.8,apply:.9,data:1,choice:.8,compare:1}},
+    ]
+  },
+  {
+    id:'eng', icon:'🌍', name:'영어', book:'능률(김성곤) 중3', range:'Lesson 5 · 6',
+    units:[
+      {title:'Lesson 5', topics:['본문 내용 이해','핵심 언어 형식 2개','단원 필수 어휘·숙어','지칭 추론·어법 어색한 것 찾기','대화문(Listen & Talk)'],
+       aff:{concept:.9,calc:0,apply:.7,data:.9,choice:.6,compare:.4}},
+      {title:'Lesson 6', topics:['본문 내용 이해','핵심 언어 형식 2개','단원 필수 어휘·숙어','어순 배열·영작(서술형)','읽기 후 활동 지문'],
+       aff:{concept:.9,calc:0,apply:.8,data:.9,choice:.6,compare:.4}},
+    ]
+  },
+  {
+    id:'his', icon:'🏺', name:'역사', book:'비상 역사 2', range:'4 · 5단원',
+    units:[
+      {title:'4단원 · 조선의 성립과 발전', topics:['조선의 건국 과정','통치 체제 정비(경국대전)','세종의 문화 발전','사림의 성장과 사화','임진왜란·병자호란'],
+       aff:{concept:.9,calc:0,apply:.6,data:.9,choice:.8,compare:.8}},
+      {title:'5단원 · 조선 사회의 변동', topics:['붕당 정치와 탕평책','영·정조의 개혁','수취 체제 개편(대동법·균역법)','조선 후기 경제 변화','실학과 서민 문화','세도 정치와 농민 봉기'],
+       aff:{concept:.8,calc:0,apply:.7,data:1,choice:.8,compare:1}},
+    ]
+  },
+  {
+    id:'han', icon:'🖌️', name:'한문', book:'미래엔 중학 한문', range:'3 · 4단원',
+    units:[
+      {title:'3단원', topics:['본문 한자의 음과 뜻','한자어의 짜임','성어(고사성어)의 뜻과 유래','문장 풀이·해석','단원 주제 관련 교훈'],
+       aff:{concept:1,calc:0,apply:.5,data:.5,choice:.6,compare:.7}},
+      {title:'4단원', topics:['본문 한자의 음과 뜻','허자(於·之·而 등)의 쓰임','문장 구조 파악','성어 활용','한자 쓰기(서술형)'],
+       aff:{concept:1,calc:0,apply:.6,data:.5,choice:.6,compare:.7}},
+    ]
+  },
+];
+
+/* ────────────── 상태 ────────────── */
+const state = { subject:null, counts:{}, memo:'' };
+TYPES.forEach(t => state.counts[t.key] = 0);
+
+/* ────────────── 커스터마이즈(설정) 저장소 ────────────── */
+const OV_KEY = 'jokboHackerOverrides_v1';
+const SUBJECTS_DEFAULT = JSON.parse(JSON.stringify(SUBJECTS)); // 원본 백업 (되돌리기용)
+
+function loadOverrides(){
+  let ov = {};
+  try {
+    const raw = localStorage.getItem(OV_KEY);
+    if (raw) ov = JSON.parse(raw) || {};
+  } catch(e){ ov = {}; }
+  SUBJECTS.forEach(s => {
+    const o = ov[s.id];
+    if (o && o.book && o.range && Array.isArray(o.units) && o.units.length){
+      s.book = o.book; s.range = o.range; s.units = o.units;
+    }
+  });
+}
+function saveOverride(id, data){
+  let ov = {};
+  try { ov = JSON.parse(localStorage.getItem(OV_KEY) || '{}') || {}; } catch(e){ ov = {}; }
+  ov[id] = data;
+  try { localStorage.setItem(OV_KEY, JSON.stringify(ov)); } catch(e){ /* 저장 실패해도 화면은 갱신됨 */ }
+}
+function clearOverride(id){
+  let ov = {};
+  try { ov = JSON.parse(localStorage.getItem(OV_KEY) || '{}') || {}; } catch(e){ ov = {}; }
+  delete ov[id];
+  try { localStorage.setItem(OV_KEY, JSON.stringify(ov)); } catch(e){}
+}
+function clearAllOverrides(){
+  try { localStorage.removeItem(OV_KEY); } catch(e){}
+}
+
+loadOverrides();
+
+/* ────────────── 화면 전환 ────────────── */
+function go(name){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById('sc-'+name).classList.add('on');
+  const map = {intro:0, subject:1, types:2, result:3};
+  ['st1','st2','st3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('on', map[name] === i+1);
+  });
+  if (name === 'admin') openAdminSubject(adminCurrentId || SUBJECTS[0].id);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ────────────── 과목 렌더 ────────────── */
+const subjectList = document.getElementById('subjectList');
+function renderSubjects(){
+  subjectList.innerHTML = '';
+  SUBJECTS.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'subj';
+    if (state.subject && state.subject.id === s.id) b.classList.add('sel');
+    b.innerHTML = `<div class="ico">${s.icon}</div>
+      <div class="nm">${s.name}</div>
+      <div class="bk">${s.book}</div>
+      <div class="rg">시험 범위 · ${s.range}</div>`;
+    b.onclick = () => {
+      state.subject = s;
+      document.querySelectorAll('.subj').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      document.getElementById('typeSubjLabel').textContent = `${s.name} · ${s.book} · ${s.range}`;
+      setTimeout(() => go('types'), 130);
+    };
+    subjectList.appendChild(b);
+  });
+}
+renderSubjects();
+
+/* ────────────── 설정(관리자) 화면 ────────────── */
+let adminCurrentId = null;
+
+function renderAdminPicker(){
+  const picker = document.getElementById('adminPicker');
+  picker.innerHTML = '';
+  SUBJECTS.forEach(s => {
+    const b = document.createElement('button');
+    b.textContent = `${s.icon} ${s.name}`;
+    if (s.id === adminCurrentId) b.classList.add('sel');
+    b.onclick = () => openAdminSubject(s.id);
+    picker.appendChild(b);
+  });
+}
+
+function openAdminSubject(id){
+  adminCurrentId = id;
+  const s = SUBJECTS.find(x => x.id === id);
+  if (!s) return;
+  renderAdminPicker();
+  document.getElementById('adBook').value = s.book;
+  document.getElementById('adRange').value = s.range;
+  document.getElementById('unitsJson').value = JSON.stringify(s.units, null, 2);
+  document.getElementById('jsonErr').style.display = 'none';
+  document.getElementById('jsonOk').style.display = 'none';
+}
+
+function validUnits(units){
+  if (!Array.isArray(units) || !units.length) return '단원이 최소 1개 이상 있는 배열이어야 해요.';
+  for (const u of units){
+    if (!u || typeof u.title !== 'string' || !u.title.trim()) return '모든 단원에는 title(문자)이 있어야 해요.';
+    if (!Array.isArray(u.topics) || !u.topics.length || !u.topics.every(t => typeof t === 'string'))
+      return `"${u.title}" 단원의 topics는 문자열 배열이어야 해요.`;
+    if (!u.aff || typeof u.aff !== 'object') return `"${u.title}" 단원에 aff 객체가 없어요.`;
+    for (const k of TYPES.map(t=>t.key)){
+      const v = u.aff[k];
+      if (typeof v !== 'number' || v < 0 || v > 1) return `"${u.title}" 단원의 aff.${k} 값은 0~1 사이 숫자여야 해요.`;
+    }
+  }
+  return null;
+}
+
+function saveAdminSubject(){
+  const errBox = document.getElementById('jsonErr'), okBox = document.getElementById('jsonOk');
+  errBox.style.display = 'none'; okBox.style.display = 'none';
+  const s = SUBJECTS.find(x => x.id === adminCurrentId);
+  if (!s) return;
+
+  const book = document.getElementById('adBook').value.trim();
+  const range = document.getElementById('adRange').value.trim();
+  if (!book || !range){
+    errBox.textContent = '교과서와 시험 범위 표시는 비워둘 수 없어요.';
+    errBox.style.display = 'block';
+    return;
+  }
+
+  let units;
+  try {
+    units = JSON.parse(document.getElementById('unitsJson').value);
+  } catch(e){
+    errBox.textContent = 'JSON 형식이 올바르지 않아요: ' + e.message;
+    errBox.style.display = 'block';
+    return;
+  }
+  const err = validUnits(units);
+  if (err){
+    errBox.textContent = err;
+    errBox.style.display = 'block';
+    return;
+  }
+
+  s.book = book; s.range = range; s.units = units;
+  saveOverride(s.id, { book, range, units });
+  renderSubjects();
+  if (state.subject && state.subject.id === s.id){
+    document.getElementById('typeSubjLabel').textContent = `${s.name} · ${s.book} · ${s.range}`;
+  }
+  okBox.style.display = 'block';
+}
+
+function resetAdminSubject(){
+  const def = SUBJECTS_DEFAULT.find(x => x.id === adminCurrentId);
+  const s = SUBJECTS.find(x => x.id === adminCurrentId);
+  if (!def || !s) return;
+  s.book = def.book; s.range = def.range; s.units = JSON.parse(JSON.stringify(def.units));
+  clearOverride(s.id);
+  renderSubjects();
+  openAdminSubject(s.id);
+  if (state.subject && state.subject.id === s.id){
+    document.getElementById('typeSubjLabel').textContent = `${s.name} · ${s.book} · ${s.range}`;
+  }
+}
+
+function resetAllAdmin(){
+  if (!confirm('모든 과목의 시험 범위를 기본값으로 되돌릴까요? 저장해둔 수정 내용이 모두 사라집니다.')) return;
+  SUBJECTS.forEach((s, i) => {
+    const def = SUBJECTS_DEFAULT[i];
+    s.book = def.book; s.range = def.range; s.units = JSON.parse(JSON.stringify(def.units));
+  });
+  clearAllOverrides();
+  renderSubjects();
+  openAdminSubject(adminCurrentId || SUBJECTS[0].id);
+}
+
+/* ────────────── 유형 입력 렌더 ────────────── */
+const typeList = document.getElementById('typeList');
+TYPES.forEach(t => {
+  const d = document.createElement('div');
+  d.className = 'type';
+  d.innerHTML = `<h4>${t.name}</h4><small>${t.desc}</small>
+    <div class="counter">
+      <button type="button" data-a="-1">−</button>
+      <input type="number" min="0" max="99" value="0" inputmode="numeric" />
+      <button type="button" data-a="1">+</button>
+      <span class="unit">문항</span>
+    </div>`;
+  const input = d.querySelector('input');
+  d.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => {
+      let v = (parseInt(input.value) || 0) + parseInt(btn.dataset.a);
+      input.value = Math.max(0, Math.min(99, v));
+      sync();
+    };
+  });
+  input.oninput = sync;
+  function sync(){
+    state.counts[t.key] = Math.max(0, Math.min(99, parseInt(input.value) || 0));
+    updateTotal();
+  }
+  typeList.appendChild(d);
+});
+
+function total(){ return TYPES.reduce((a,t) => a + (state.counts[t.key]||0), 0); }
+function updateTotal(){
+  const n = total();
+  document.getElementById('totalCnt').textContent = n;
+  const warn = document.getElementById('totalWarn');
+  document.getElementById('predictBtn').disabled = n === 0;
+  if (n === 0) warn.textContent = '한 유형 이상 입력해 주세요';
+  else if (n < 10) warn.textContent = '보통 내신은 20~25문항 정도예요';
+  else warn.textContent = '';
+}
+updateTotal();
+
+/* ────────────── 예측 실행 ────────────── */
+let running = false;
+let webllmEngine = null; // 한 번 로드하면 세션 동안 재사용
+
+function withTimeout(promise, ms, tag){
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(tag||'timeout')), ms))
+  ]);
+}
+
+async function runWebLLM(){
+  if (!('gpu' in navigator)) throw new Error('no-webgpu');
+  const setMsg = (t) => { const el = document.getElementById('loadMsg'); if (el) el.textContent = t; };
+  const setSub = (t) => { const el = document.getElementById('loadSub'); if (el) el.textContent = t; };
+
+  if (!webllmEngine){
+    setMsg('브라우저 AI 라이브러리를 불러오는 중…');
+    setSub('처음 한 번만 시간이 걸려요');
+    const webllm = await withTimeout(
+      import('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/+esm'),
+      30000, 'lib-load-timeout'
+    );
+    webllmEngine = await withTimeout(
+      webllm.CreateMLCEngine('Qwen2.5-1.5B-Instruct-q4f16_1-MLC', {
+        initProgressCallback: (p) => {
+          const pct = Math.round((p.progress||0)*100);
+          setMsg(`모델을 내려받는 중… ${pct}%`);
+          setSub('약 1GB · 처음 한 번만, 이후엔 캐시돼요');
+        }
+      }),
+      6*60*1000, 'model-load-timeout'
+    );
+  }
+  setMsg('브라우저 AI가 시험 범위를 분석하는 중…');
+  setSub('내 컴퓨터 안에서 계산 중이라 서버로 전송되지 않아요');
+
+  const reply = await withTimeout(
+    webllmEngine.chat.completions.create({
+      messages: [{ role:'user', content: buildPrompt() }],
+      temperature: 0.4,
+      max_tokens: 1800,
+    }),
+    90000, 'inference-timeout'
+  );
+  const text = reply.choices[0].message.content || '';
+  const s = text.indexOf('{'), e = text.lastIndexOf('}');
+  if (s === -1 || e === -1) throw new Error('bad-json');
+  const parsed = JSON.parse(text.slice(s, e+1));
+  if (!parsed || !Array.isArray(parsed.units) || !parsed.units.length) throw new Error('bad-json');
+  return parsed;
+}
+
+function webllmErrorCopy(e){
+  const msg = String((e && e.message) || e || '');
+  if (msg.includes('no-webgpu')) return '이 브라우저·기기는 WebGPU를 지원하지 않아 브라우저 AI를 쓸 수 없었습니다. 최신 Chrome·Edge 데스크톱에서 다시 시도해 보세요. 지금은 자체 분석 로직으로 예측했습니다.';
+  if (msg.includes('timeout')) return '브라우저 AI 로딩이 너무 오래 걸려 자체 분석 로직으로 예측했습니다. 네트워크가 느리거나 기기 사양이 낮으면 발생할 수 있습니다.';
+  if (msg.includes('bad-json')) return '브라우저 AI가 형식에 맞지 않는 답을 줘서 자체 분석 로직으로 다시 예측했습니다. 소형 모델이라 가끔 이런 일이 있어요.';
+  return '브라우저 AI를 불러오지 못해 자체 분석 로직으로 예측했습니다. claude.ai에서 보고 있다면 이 기능은 파일을 다운로드해서 직접 열었을 때만 동작합니다.';
+}
+
+async function runPrediction(){
+  if (running || total() === 0) return;
+  running = true;
+  state.memo = document.getElementById('memoBox').value.trim();
+  const useBrowserAI = document.getElementById('browserAiToggle').checked;
+  go('result');
+  const body = document.getElementById('resultBody');
+  body.innerHTML = `<div class="loading"><div class="spin"></div>
+    <p id="loadMsg">지난 시험지 유형 분포를 분석하는 중…</p>
+    <small id="loadSub">시험 범위의 소단원별 출제 가능성을 계산하고 있어요</small></div>`;
+
+  const msgs = ['지난 시험지 유형 분포를 분석하는 중…','선생님의 출제 경향을 파악하는 중…','시험 범위 소단원과 대조하는 중…','유형별 출제 가능성을 계산하는 중…'];
+  let mi = 0, rotate = true;
+  const timer = setInterval(() => {
+    if (!rotate) return;
+    const el = document.getElementById('loadMsg');
+    if (el) el.textContent = msgs[(++mi) % msgs.length];
+  }, 3500);
+
+  let data = null, source = 'local', errMsg = '';
+
+  if (useBrowserAI){
+    rotate = false;
+    try {
+      data = await runWebLLM();
+      source = 'webllm';
+    } catch (e) {
+      errMsg = webllmErrorCopy(e);
+    }
+    rotate = true;
+  }
+
+  if (!data){
+    try {
+      const sample = window.claude ? await window.claude.use('sample') : null;
+      if (sample) {
+        const d = await sample.json(buildPrompt(), { modelTier:'default' });
+        if (d && Array.isArray(d.units) && d.units.length){ data = d; source = 'claude'; if(!useBrowserAI) errMsg=''; }
+      }
+    } catch (e) {
+      if (!errMsg) errMsg = errorCopy(e && e.code);
+    }
+  }
+
+  clearInterval(timer);
+  if (!data){ data = localPrediction(); source = 'local'; }
+  render(data, source, errMsg);
+  running = false;
+}
+
+function shareMap(){
+  const n = total(), o = {};
+  TYPES.forEach(t => o[t.key] = n ? (state.counts[t.key]||0)/n : 0);
+  return o;
+}
+
+/* ────────────── 시험 후 피드백 저장소 ──────────────
+   레코드 형태: { id, subjectId, subjectName, range, ts, difficulty, overallAccuracy,
+                  units:[{title, actualCount, topType}] }                              */
+const FB_KEY = 'jokboHackerFeedback_v2';
+const DIFF_LEVELS = ['매우 쉬움','쉬움','보통','어려움','매우 어려움'];
+
+function loadFeedback(){
+  try { return JSON.parse(localStorage.getItem(FB_KEY) || '[]') || []; } catch(e){ return []; }
+}
+function saveFeedbackList(list){
+  while (list.length > 200) list.shift();
+  try { localStorage.setItem(FB_KEY, JSON.stringify(list)); } catch(e){ /* 저장 실패해도 화면은 정상 동작 */ }
+}
+function addFeedbackRecord(rec){
+  const list = loadFeedback();
+  list.push(rec);
+  saveFeedbackList(list);
+}
+
+/* 과목+유형별 과거 적중 신호 — 그 유형이 "가장 유력하게 예측된" 단원들에서
+   실제로 전체 예측이 얼마나 맞았다고 느꼈는지(overallAccuracy)를 근거로 집계 */
+function getTypeAccuracy(subjectId, typeKey){
+  const recs = loadFeedback().filter(r => r.subjectId === subjectId);
+  let n = 0, hit = 0;
+  recs.forEach(r => {
+    (r.units||[]).forEach(u => {
+      if (u.topType !== typeKey) return;
+      n++;
+      if ((r.overallAccuracy||0) >= 60) hit++;
+    });
+  });
+  if (!n) return null;
+  return { n, acc: hit/n };
+}
+function subjectFeedbackSummary(subjectId){
+  const byType = {};
+  loadFeedback().filter(r => r.subjectId === subjectId).forEach(r => {
+    (r.units||[]).forEach(u => {
+      if (!u.topType) return;
+      if (!byType[u.topType]) byType[u.topType] = {n:0, hit:0};
+      byType[u.topType].n++;
+      if ((r.overallAccuracy||0) >= 60) byType[u.topType].hit++;
+    });
+  });
+  return TYPES.map(t => byType[t.key] ? { name:t.name, n:byType[t.key].n, hit:byType[t.key].hit } : null).filter(Boolean);
+}
+function subjectExamHistory(subjectId){
+  return loadFeedback().filter(r => r.subjectId === subjectId).sort((a,b) => b.ts - a.ts);
+}
+
+/* ────────────── 피드백 화면 상태 ────────────── */
+let lastResult = null; // { subject, units:[{title, predictions}], source } — render() 직후 채워짐
+
+function openFeedbackScreen(){
+  if (!lastResult){ alert('먼저 예측 결과를 확인한 뒤 피드백을 남길 수 있어요.'); return; }
+  const s = lastResult.subject;
+  document.getElementById('fbSubjLabel').textContent = `${s.name} · ${s.book} · ${s.range}`;
+
+  const diffWrap = document.getElementById('fbDiffPicker');
+  diffWrap.innerHTML = DIFF_LEVELS.map(d => `<button type="button" class="diff-btn" data-diff="${esc(d)}" onclick="pickDifficulty(this)">${esc(d)}</button>`).join('');
+
+  const unitsWrap = document.getElementById('fbUnitsWrap');
+  unitsWrap.innerHTML = lastResult.units.map((u, i) => `
+    <div class="fb-unit-row">
+      <div class="fb-unit-title">${esc(u.title)}</div>
+      <div class="fb-unit-input">
+        <input type="number" min="0" max="50" value="0" id="fbUnitCnt_${i}" inputmode="numeric">
+        <span>문제 실제로 나옴</span>
+      </div>
+    </div>`).join('');
+
+  const acc = document.getElementById('fbAccuracy');
+  acc.value = 70;
+  document.getElementById('fbAccuracyLabel').textContent = '70%';
+
+  go('feedback');
+}
+
+function pickDifficulty(btn){
+  document.querySelectorAll('#fbDiffPicker .diff-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function submitFeedback(){
+  if (!lastResult) return;
+  const s = lastResult.subject;
+  const diffBtn = document.querySelector('#fbDiffPicker .diff-btn.sel');
+  if (!diffBtn){
+    alert('시험 난이도를 먼저 선택해 주세요.');
+    return;
+  }
+  const difficulty = diffBtn.dataset.diff;
+  const overallAccuracy = parseInt(document.getElementById('fbAccuracy').value, 10) || 0;
+
+  const units = lastResult.units.map((u, i) => {
+    const el = document.getElementById('fbUnitCnt_'+i);
+    const actualCount = el ? Math.max(0, Math.min(50, parseInt(el.value,10) || 0)) : 0;
+    const top = (u.predictions && u.predictions[0]) ? typeKeyByName(u.predictions[0].type) : null;
+    return { title: u.title, actualCount, topType: top };
+  });
+
+  addFeedbackRecord({
+    id: 'fb_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    subjectId: s.id, subjectName: s.name, range: s.range, ts: Date.now(),
+    difficulty, overallAccuracy, units
+  });
+
+  alert('피드백이 저장됐어요! 다음 예측부터 반영돼요.');
+  render(lastResult.data, lastResult.source, '');
+  go('result');
+}
+
+function buildPrompt(){
+  const s = state.subject;
+  const counts = TYPES.map(t => `${t.name} ${state.counts[t.key]||0}문항`).join(', ');
+  const units = s.units.map(u => `- ${u.title} (주요 내용: ${u.topics.join(', ')})`).join('\n');
+  const fbSummary = subjectFeedbackSummary(s.id);
+  const fbBlock = fbSummary.length
+    ? `\n[이 과목에서 학생이 남긴 지난 예측 피드백]\n${fbSummary.map(f => `${f.name}: ${f.n}건 중 ${f.hit}건 적중 (적중률 ${Math.round(f.hit/f.n*100)}%)`).join('\n')}\n적중률이 높았던 유형은 이번 예측에서도 더 확신 있게, 낮았던 유형은 신중하게 반영하세요.\n`
+    : '';
+  return `당신은 대한민국 중학교 3학년 내신 시험 출제 경향을 분석하는 전문가입니다.
+아래 정보를 바탕으로, 이번 시험 범위의 각 단원에서 어떤 소단원·작품·개념이 어떤 유형으로 출제될 가능성이 높은지 예측하세요.
+
+[과목] ${s.name}
+[교과서] ${s.book}
+[이번 시험 범위] ${s.range}
+${units}
+
+[지난 시험지의 출제 유형 분포 (총 ${total()}문항)]
+${counts}
+
+[학생이 남긴 추가 정보]
+${state.memo || '없음'}
+${fbBlock}
+지침:
+1) 지난 시험지의 유형 분포는 담당 선생님의 출제 습관을 보여주는 가장 강한 단서입니다. 비중이 큰 유형이 이번에도 많이 나온다고 전제하되, 단원 내용상 그 유형이 나오기 어려우면 조정하세요.
+2) 학생이 추가 정보에 실제 단원명이나 작품명을 적었다면 그것을 우선해서 사용하세요.
+3) 각 단원마다 출제 가능성이 높은 소단원·작품·개념을 구체적으로 지목하세요. 막연한 표현 대신 실제 학습 요소 이름을 쓰세요.
+4) 예측 유형은 반드시 다음 6개 중에서만 고르세요: 개념 문제, 계산 문제, 응용 문제, 자료 분석형, 보기형, 비교형.
+5) 모든 설명은 한국어 존댓말로, 중학생이 읽고 바로 행동할 수 있게 구체적으로 쓰세요.
+6) 각 예측 항목에는 0~100 사이의 정수 confidence(그 유형이 그 단원에서 실제로 나올 확률을 퍼센트로 환산한 값)를 반드시 함께 주세요. level이 "높음"이면 대략 70~95, "중간"이면 40~69, "낮음"이면 10~39 범위를 참고하되, 근거의 강도에 따라 세부 숫자를 다르게 주세요.
+
+다음 JSON 형식으로만 답하세요. 다른 말은 쓰지 마세요.
+{
+  "summary": "선생님의 출제 경향 요약과 이번 시험 대비 핵심 전략 (3~4문장)",
+  "units": [
+    {
+      "title": "단원명",
+      "focus": ["출제 가능성 높은 소단원/작품/개념", "..."],
+      "predictions": [
+        {"type":"자료 분석형","level":"높음","confidence":82,"reason":"왜 이 단원에서 이 유형이 나올 가능성이 높은지, 어떤 형태로 나올지 구체적으로"}
+      ],
+      "must": ["이 단원에서 반드시 공부해야 할 것 (구체적으로)", "..."]
+    }
+  ],
+  "tips": ["시험 직전 체크리스트 항목", "..."]
+}
+level 값은 "높음", "중간", "낮음" 중 하나입니다. 각 단원마다 predictions는 3~4개, focus는 3~5개, must는 3~4개를 담고, tips는 4~5개를 담으세요.`;
+}
+
+/* ── AI를 못 쓸 때의 자체 예측 로직 ── */
+
+/* 유형별 "이유" 문장 템플릿 — 단원·유형마다 다른 문장이 나오도록 여러 버전을 두고 상황에 맞게 고른다 */
+const REASON_TPL = {
+  concept: [
+    (a,b,cnt,pct)=>`지난 시험지의 ${pct}%(${cnt}문항)가 개념 문제였을 만큼 선생님이 정의·용어를 정확히 아는지 즐겨 묻습니다. 이 단원에서는 특히 ${a}의 정의를 그대로 묻거나 헷갈리는 용어를 짝지어 구분하게 할 가능성이 큽니다.`,
+    (a,b,cnt,pct)=>`선생님은 개념 문제 비중이 ${pct}%로 높은 편입니다. ${a}와(과) ${b}처럼 이름이 비슷하거나 헷갈리는 개념을 정확한 표현으로 구분해서 묻는 문제가 나올 수 있습니다.`
+  ],
+  calc: [
+    (a,b,cnt,pct)=>`지난 시험지에서 계산 문제가 ${cnt}문항(${pct}%) 나왔습니다. ${a} 관련 공식에 숫자를 대입해 풀이 과정을 요구하는 문제가 이 단원에서도 출제될 가능성이 높습니다.`,
+    (a,b,cnt,pct)=>`계산 문제 비중(${pct}%)을 볼 때, ${a}을(를) 활용해 값을 구하거나 ${b}까지 이어지는 다단계 계산 문제로 나올 수 있습니다. 풀이 과정 자체를 서술하게 할 수도 있습니다.`
+  ],
+  apply: [
+    (a,b,cnt,pct)=>`응용 문제가 ${pct}%를 차지했던 만큼, ${a}을(를) 교과서에 없던 새로운 상황이나 실생활 예시에 적용해 보라는 형태로 나올 가능성이 있습니다.`,
+    (a,b,cnt,pct)=>`단순 암기보다 ${a}을(를) 다른 조건에 적용해 판단하게 하는 응용 문제가 예상됩니다. 지난 시험 응용 문제 비중(${pct}%)을 고려하면 이 단원도 예외는 아닙니다.`
+  ],
+  data: [
+    (a,b,cnt,pct)=>`자료 분석형이 ${cnt}문항(${pct}%)이나 나왔습니다. ${a} 부분은 표·그래프·지문 등 자료를 보고 해석하는 문제로 만들기 좋아서, 자료를 처음 보고도 읽어내는 연습이 필요합니다.`,
+    (a,b,cnt,pct)=>`자료를 주고 해석시키는 문제 비중(${pct}%)이 높은 선생님입니다. ${a}와(과) 관련된 자료(그래프·표·지도 등)를 제시하고 특징을 찾게 하는 문제가 나올 확률이 큽니다.`
+  ],
+  choice: [
+    (a,b,cnt,pct)=>`보기형이 ${pct}%를 차지했습니다. ${a}에 대한 여러 설명을 ㄱㄴㄷ 보기로 늘어놓고 옳은 것만 고르게 하는 문제가 이 단원에서도 나올 수 있습니다.`,
+    (a,b,cnt,pct)=>`ㄱㄴㄷ 보기 중 옳은 것을 고르는 문제 비중(${pct}%)이 있으므로, ${a}와(과) ${b}의 세부 내용을 헷갈리지 않게 정리해 두는 것이 좋습니다.`
+  ],
+  compare: [
+    (a,b,cnt,pct)=>`비교형이 ${pct}%였습니다. ${a}와(과) ${b}처럼 이 단원 안에서 비교할 대상이 뚜렷해서, 공통점과 차이점을 표로 정리해 묻는 문제가 나올 가능성이 있습니다.`,
+    (a,b,cnt,pct)=>`둘 이상을 견주는 비교형 문제 비중(${pct}%)을 볼 때, ${a}을(를) 다른 개념·시기·대상과 나란히 놓고 차이를 판단하게 할 수 있습니다.`
+  ]
+};
+/* 선생님이 이 유형을 거의 낸 적 없어도, 단원 내용상 나올 수 있다고 정직하게 알려주는 문장 */
+const HONEST_TPL = {
+  concept:(a)=>`지난 시험지에는 개념 문제가 거의 없었지만, ${a}은(는) 정의가 명확한 내용이라 이번엔 개념을 직접 묻는 문제가 섞여 나올 수 있습니다.`,
+  calc:(a)=>`계산 문제가 지난번엔 적었지만, ${a}은(는) 공식·수치가 핵심인 내용이라 계산을 요구하는 문제가 새로 나올 가능성을 배제할 수 없습니다.`,
+  apply:(a)=>`응용 문제 비중은 낮았지만, ${a}은(는) 새로운 상황에 적용해보기 좋은 내용이라 응용형으로 변형될 수 있습니다.`,
+  data:(a)=>`자료 분석형이 드물었더라도, ${a}은(는) 표·그래프로 만들기 좋은 내용이라 자료가 새로 제시될 가능성이 있습니다.`,
+  choice:(a)=>`보기형이 적었지만, ${a}은(는) 세부 항목이 많아 ㄱㄴㄷ 보기로 묶어 내기 좋은 내용입니다.`,
+  compare:(a)=>`비교형이 드물었지만, ${a}은(는) 비교할 대상이 뚜렷해 새롭게 비교형으로 나올 여지가 있습니다.`
+};
+const MUST_ACTION = {
+  concept:(a)=>`${a}의 정의를 교과서 표현 그대로 정확히 외우세요`,
+  calc:(a)=>`${a} 공식을 직접 손으로 여러 번 풀어 계산 순서를 몸에 익히세요`,
+  apply:(a)=>`${a}을(를) 낯선 상황에 적용해보는 연습 문제를 따로 풀어보세요`,
+  data:(a)=>`${a}과 관련된 표·그래프·자료를 스스로 해석해보는 연습을 하세요`,
+  choice:(a)=>`${a}의 세부 내용을 헷갈리지 않게 ㄱㄴㄷ 형태로 정리해두세요`,
+  compare:(a)=>`${a}을(를) 다른 개념과 표로 나란히 비교 정리해두세요`
+};
+
+function localPrediction(){
+  const sh = shareMap(), s = state.subject, n = total();
+  const maxShare = Math.max(...TYPES.map(t => sh[t.key]||0), 0.0001);
+
+  const units = s.units.map((u, ui) => {
+    const scored = TYPES.map((t, ti) => {
+      const shNorm = (sh[t.key]||0) / maxShare;      // 이 시험에서 상대적으로 얼마나 자주 낸 유형인가 (0~1)
+      const aff = u.aff[t.key] || 0;                  // 이 단원 내용이 그 유형에 얼마나 잘 맞는가 (0~1)
+      let score = 0.58*shNorm + 0.42*aff;
+      const stat = getTypeAccuracy(s.id, t.key);       // 이 과목에서 이 유형 예측의 과거 적중률
+      let fbNote = false;
+      if (stat && stat.n >= 2){
+        score = Math.min(1, score * (0.7 + 0.6*stat.acc));  // 적중률 50%가 기준(×1.0), 100%면 ×1.3, 0%면 ×0.7
+        fbNote = true;
+      }
+      return { t, ti, aff, score, fbNote, stat, cnt: state.counts[t.key]||0, pct: Math.round((sh[t.key]||0)*100) };
+    }).sort((a,b) => b.score - a.score);
+
+    const top = scored.filter(x => x.aff > 0.15).slice(0, 4);
+    const topScore = top[0] ? top[0].score : 1;
+
+    const predictions = top.map((x, i) => {
+      const level = i === 0 ? '높음' : (x.score >= topScore*0.72 ? '중간' : '낮음');
+      const confidence = Math.max(5, Math.min(97, Math.round(x.score*100)));
+      const a = u.topics[ui % u.topics.length];
+      const b = u.topics[(ui+i+1) % u.topics.length];
+      let reason;
+      if (x.cnt === 0 && x.aff >= 0.75){
+        reason = HONEST_TPL[x.t.key](a);
+      } else {
+        const pool = REASON_TPL[x.t.key];
+        reason = pool[(ui+i) % pool.length](a, b, x.cnt, x.pct);
+      }
+      if (x.fbNote) reason += ` (이 과목 "${x.t.name}" 예측 적중률 ${Math.round(x.stat.acc*100)}%가 반영된 수치예요.)`;
+      return { type: x.t.name, level, confidence, reason, _key: x.t.key };
+    });
+
+    const must = predictions.slice(0, Math.min(4, u.topics.length)).map((p, i) => {
+      const topic = u.topics[i % u.topics.length];
+      return MUST_ACTION[p._key](topic);
+    });
+
+    return { title: u.title, focus: u.topics.slice(0,5), predictions, must };
+  });
+
+  const rankedTypes = TYPES.slice().sort((a,b) => (sh[b.key]||0)-(sh[a.key]||0));
+  const topType = rankedTypes[0], secondType = rankedTypes[1];
+  const unusedTypes = TYPES.filter(t => (state.counts[t.key]||0) === 0);
+  const topPct = Math.round((sh[topType.key]||0)*100);
+  const secondPct = Math.round((sh[secondType.key]||0)*100);
+
+  let summary = `지난 시험지 총 ${n}문항 중 <b>${topType.name}</b>이(가) ${topPct}%로 가장 큰 비중을 차지했고, 그다음은 <b>${secondType.name}</b>(${secondPct}%)이었습니다. `;
+  summary += `이 두 유형은 담당 선생님이 반복적으로 선호하는 출제 방식일 가능성이 높으므로, ${s.range} 범위를 공부할 때 ${topType.name}·${secondType.name}으로 물어보기 좋은 부분부터 우선 정리하는 것이 효율적입니다. `;
+  if (unusedTypes.length){
+    summary += `반대로 <b>${unusedTypes.map(t=>t.name).join('·')}</b>은(는) 지난 시험지에서 아예 나오지 않았던 유형이라 이번에도 비중이 낮을 가능성이 있지만, 단원 내용상 잘 맞는 곳이 있다면 한두 문제 섞여 나올 수 있으니 완전히 배제하지는 마세요.`;
+  } else {
+    summary += `6가지 유형이 고르게 섞여 나오는 편이라, 한 유형만 집중하기보다 단원별로 어떤 유형이 어울리는지 골고루 대비하는 편이 안전합니다.`;
+  }
+  const fbSum = subjectFeedbackSummary(s.id).filter(f => f.n >= 2);
+  if (fbSum.length){
+    summary += ` 그리고 이 과목에서 남겨주신 지난 피드백(` + fbSum.map(f => `${f.name} ${f.hit}/${f.n}건 적중`).join(', ') + `)도 이번 confidence 수치에 반영했습니다.`;
+  }
+
+  const tips = [
+    '수업 시간에 선생님이 두 번 이상 강조하거나 "여기 중요해"라고 말한 부분을 가장 먼저 정리하세요.',
+    '교과서 학습 활동과 나눠 준 프린트의 문제는 숫자나 보기만 바뀌어 그대로 나올 확률이 높습니다.',
+    `${topType.name}은(는) 이 선생님이 가장 즐겨 내는 유형이니, 기출·문제집도 이 유형 위주로 우선 풀어보세요.`,
+  ];
+  if (unusedTypes.length) tips.push(`${unusedTypes.map(t=>t.name).join('·')}은(는) 비중은 낮지만 대비를 아예 안 하면 위험하니, 단원별 '이건 꼭 보고 가세요' 항목만이라도 훑어두세요.`);
+  tips.push('시험 3일 전부터는 새 문제보다 이미 틀렸던 문제를 유형별로 모아 다시 푸는 데 시간을 쓰세요.');
+
+  return { summary, units, tips };
+}
+
+function errorCopy(code){
+  const m = {
+    not_granted:'Claude 사용 권한이 허용되지 않아 자체 분석 로직으로 예측했습니다.',
+    rate_limited:'요청이 많아 지금은 자체 분석 로직으로 예측했습니다. 잠시 후 다시 시도해 보세요.',
+    session_expired:'로그인이 만료되어 자체 분석 로직으로 예측했습니다.',
+    invalid_json:'AI 응답을 읽지 못해 자체 분석 로직으로 예측했습니다. 다시 시도해 보세요.',
+    refused:'AI가 응답하지 않아 자체 분석 로직으로 예측했습니다.',
+  };
+  return m[code] || (code ? '일시적인 문제로 자체 분석 로직으로 예측했습니다.' : '');
+}
+
+/* ────────────── 학습 체크리스트 (localStorage 저장) ────────────── */
+const CHK_KEY = 'jokboHackerChecklist_v1';
+function loadChecklist(){
+  try { return JSON.parse(localStorage.getItem(CHK_KEY) || '{}') || {}; } catch(e){ return {}; }
+}
+function saveChecklist(map){
+  try { localStorage.setItem(CHK_KEY, JSON.stringify(map)); } catch(e){ /* 저장 실패해도 화면상 체크는 유지됨 */ }
+}
+function chkKey(subjectId, unitTitle, itemText){ return `${subjectId}__${unitTitle}__${itemText}`; }
+function attrJs(v){ return JSON.stringify(v).replace(/'/g, '&#39;'); }
+
+function onChecklistToggle(checkboxEl, key){
+  const map = loadChecklist();
+  if (checkboxEl.checked) map[key] = true; else delete map[key];
+  saveChecklist(map);
+  const item = checkboxEl.closest('.chk-item');
+  if (item) item.classList.toggle('done', checkboxEl.checked);
+  updateProgress();
+}
+
+function updateProgress(){
+  const area = document.getElementById('printArea');
+  if (!area) return;
+  let totalAll = 0, doneAll = 0;
+  area.querySelectorAll('.unit-card').forEach(card => {
+    const items = card.querySelectorAll('.chk-item');
+    const done = card.querySelectorAll('.chk-item.done').length;
+    totalAll += items.length; doneAll += done;
+    const badge = card.querySelector('.unit-progress');
+    if (badge) badge.textContent = items.length ? `${done}/${items.length} 완료` : '';
+  });
+  const overall = document.getElementById('progOverall');
+  const bar = document.getElementById('progOverallBar');
+  if (overall) overall.textContent = totalAll ? `${doneAll}/${totalAll} 완료` : '0/0 완료';
+  if (bar) bar.style.width = totalAll ? `${Math.round(doneAll/totalAll*100)}%` : '0%';
+}
+
+/* ────────────── 이미지로 저장 ────────────── */
+async function exportPNG(){
+  const area = document.getElementById('printArea');
+  const btn = document.getElementById('exportPngBtn');
+  if (!area) return;
+  if (typeof html2canvas === 'undefined'){
+    alert('이미지 저장 기능을 불러오지 못했습니다. 인터넷 연결을 확인하거나 인쇄(PDF) 저장을 이용해 주세요.');
+    return;
+  }
+  const orig = btn.textContent;
+  btn.textContent = '이미지 만드는 중…'; btn.disabled = true;
+  try {
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const canvas = await html2canvas(area, { backgroundColor: bg || '#ffffff', scale: 2, useCORS: true });
+    await new Promise(resolve => {
+      canvas.toBlob(blob => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const subjName = state.subject ? state.subject.name : '결과';
+        a.download = `족보해커_${subjName}_예측결과.png`;
+        document.body.appendChild(a); a.click(); a.remove();
+        resolve();
+      });
+    });
+  } catch(e){
+    alert('이미지 저장에 실패했습니다: ' + e.message);
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+
+function esc(x){ return String(x == null ? '' : x).replace(/[<>]/g, c => c === '<' ? '&lt;' : '&gt;'); }
+function lvClass(l){ return l === '높음' ? 'high' : (l === '중간' ? 'mid' : 'low'); }
+function pctFor(p){
+  if (typeof p.confidence === 'number') return Math.max(0, Math.min(100, Math.round(p.confidence)));
+  return {'높음':80,'중간':55,'낮음':25}[p.level] || 50;
+}
+function typeKeyByName(name){ const t = TYPES.find(x => x.name === name); return t ? t.key : name; }
+
+function sourceLabel(source){
+  if (source === 'webllm') return { who:'브라우저 안에서 도는 무료 AI(Qwen2.5)가', badge:'🧪 브라우저 AI' };
+  if (source === 'claude') return { who:'AI가', badge:'✨ AI' };
+  return { who:'분석 엔진이', badge:'📊 자체 분석 로직' };
+}
+
+function render(data, source, errMsg){
+  const s = state.subject, n = total(), sh = shareMap();
+  const src = sourceLabel(source);
+  const checklistMapNow = loadChecklist();
+  const rows = TYPES.map(t => {
+    const p = Math.round((sh[t.key]||0)*100);
+    return `<div class="row"><div class="lb">${t.name}</div>
+      <div class="track"><div class="fill" style="width:${p}%"></div></div>
+      <div class="vl">${state.counts[t.key]||0}문항 · ${p}%</div></div>`;
+  }).join('');
+
+  const unitsHtml = (data.units||[]).map(u => `
+    <div class="unit-card">
+      <div class="uh"><h3>${esc(u.title)}</h3><span class="unit-progress"></span></div>
+      <div class="sub">${s.book} · 출제 예상 분석</div>
+      <div class="chips">${(u.focus||[]).map(f => `<div class="chip">${esc(f)}</div>`).join('')}</div>
+      <div class="pred">
+        ${(u.predictions||[]).map(p => {
+          const conf = pctFor(p);
+          return `
+          <div class="pred-item">
+            <div class="lv ${lvClass(p.level)}">${esc(p.level||'중간')}<span class="pctnum">${conf}%</span></div>
+            <div class="pt"><b>${esc(p.type)}</b><span>${esc(p.reason)}</span></div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${(u.must&&u.must.length) ? `<div class="must"><b>✓ 이건 꼭 보고 가세요 — 하나씩 체크하며 공부해보세요</b>
+        <div class="checklist">
+          ${u.must.map(m => {
+            const key = chkKey(s.id, u.title, m);
+            const checked = !!checklistMapNow[key];
+            return `<label class="chk-item ${checked?'done':''}">
+              <input type="checkbox" ${checked?'checked':''} onchange='onChecklistToggle(this, ${attrJs(key)})'>
+              <span>${esc(m)}</span>
+            </label>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+    </div>`).join('');
+
+  const fbSummaryList = subjectFeedbackSummary(s.id);
+  const fbSummaryHtml = fbSummaryList.length ? `
+      <div class="fb-summary">
+        <b>📊 이 과목에서 지금까지 남긴 예측 피드백</b>
+        <div class="fb-chips">${fbSummaryList.map(f => `<div class="fb-chip">${esc(f.name)} ${f.hit}/${f.n}건 적중 (${Math.round(f.hit/f.n*100)}%)</div>`).join('')}</div>
+      </div>` : '';
+
+  document.getElementById('resultBody').innerHTML = `
+    <div id="printArea">
+      <div class="head">
+        <div class="eyebrow">STEP 3 · ${esc(s.name)} · ${esc(s.book)} · <span style="color:var(--text-dim);">${src.badge}</span></div>
+        <h2>${esc(s.range)}, 이렇게 나올 가능성이 높아요</h2>
+        <p>${src.who} 지난 시험지 ${n}문항의 유형 분포와 시험 범위를 대조해 예측했습니다.</p>
+      </div>
+      ${fbSummaryHtml}
+      <div class="study-progress">
+        <div class="sp-top"><span>📋 학습 체크리스트 진행률</span><b id="progOverall">0/0 완료</b></div>
+        <div class="sp-track"><div class="sp-fill" id="progOverallBar"></div></div>
+      </div>
+      <div class="summary">${data.summary || ''}</div>
+      <div class="dist"><h3>지난 시험지 유형 분포 (총 ${n}문항)</h3>${rows}</div>
+      ${unitsHtml}
+      <div class="tips"><b>🎯 시험 전 체크리스트</b><ol>${(data.tips||[]).map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>
+    </div>
+    ${errMsg ? `<div class="err">${esc(errMsg)}</div>` : ''}
+    <div class="actions">
+      <button class="btn ghost sm" onclick="openFeedbackScreen()">🎯 시험 봤어요, 피드백 남기기</button>
+      <button class="btn sm" id="exportPngBtn" onclick="exportPNG()">🖼 이미지로 저장</button>
+      <button class="btn sm" onclick="window.print()">🖨 인쇄 / PDF로 저장</button>
+      <button class="btn ghost sm" onclick="go('types')">← 유형 수 수정하기</button>
+      <button class="btn ghost sm" onclick="go('subject')">다른 과목 예측하기</button>
+      <button class="btn ghost sm" onclick="runPrediction()">다시 예측</button>
+    </div>`;
+  lastResult = { subject: s, units: data.units || [], source, data };
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
